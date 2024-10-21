@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Game</title>
+    <style>
+        #button-container {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-gap: 10px;
+        }
+        #button-container > button {
+            width: 100px;
+            height: 100px;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .matched {
+            background-color: lightgreen;
+        }
+    </style>
+</head>
+<body>
+
+<h2>單字對對碰遊戲</h2>
+<p>規則：成對翻出所有相同的單字即可獲勝</p>
+<button id="startBtn">按下開始遊戲</button>
+<br>
+<br>
+<br>
+<div id="button-container">
+
+</div>
+
+<script>
+    // 給定8個字串
+    let strings = ['apple', 'banana', 'cherry', 'date', 'elderberry', 'fig', 'grape', 'honeydew'];
+
+    //按鈕存放區塊、開始按鈕
+    let bttonContainer = document.getElementById('button-container');
+    let starBtn = document.getElementById('startBtn');
+
+    // 追蹤每回兩次選取的按鈕
+    let firstSelected = null;
+    let secondSelected = null;
+
+    //判斷是否已重置按鈕
+    let stillProcessing = false;
+
+    startBtn.addEventListener('click', function() {
+        
+        //清空重置遊戲
+        bttonContainer.innerHTML = '';
+        firstSelected = null;
+        secondSelected = null;
+        stillProcessing = false;
+
+        // 將字串重複並隨機打亂順序
+        let repeatedStrings = strings.concat(strings);
+        repeatedStrings.sort(() => Math.random() - 0.5);
+
+        //生成按鈕
+        repeatedStrings.forEach(function(str) {
+            let button = document.createElement('button');
+            button.className = str;
+
+            
+            //點擊各按鈕時
+            button.addEventListener('click', function() {
+                //若仍在處理配對結果/已經配對成功/已選取第一個按鈕，則不做任何動作
+                if (stillProcessing || button.classList.contains('matched') || button === firstSelected) {
+                    return;
+                }
+
+                //按鈕上顯示class名
+                button.textContent = button.className;
+
+                //如果還沒有選第一個按鈕
+                if (!firstSelected) {
+                    firstSelected = button;
+                } else {
+                    // 選了第二個按鈕
+                    secondSelected = button;
+                    stillProcessing = true;
+
+                    // 確保按鈕都不是 null
+                    if (firstSelected && secondSelected) {
+                        // 若按鈕配對成功
+                        if (firstSelected.className === secondSelected.className) {
+                            firstSelected.classList.add('matched');
+                            secondSelected.classList.add('matched');
+                            resetSelection();
+                        } else {
+                            // 若配對失敗則清除選定的按鈕文字
+                            setTimeout(function() {
+                                firstSelected.textContent = '';
+                                secondSelected.textContent = '';
+                                resetSelection();
+                            }, 800);
+                        }
+                    }
+                    // 檢查是否已經全部配對成功
+                    checkIfWin();
+                }
+            });
+
+            bttonContainer.appendChild(button);
+        });
+    });
+
+    // 重置選擇和處理狀態
+    function resetSelection() {
+        firstSelected = null;
+        secondSelected = null;
+        stillProcessing = false;
+    }
+
+    // 檢查所有按鈕是否已經配對成功
+    function checkIfWin() {
+        let matchedBtns = document.querySelectorAll('.matched');
+        if (matchedBtns.length === strings.length * 2) {
+            setTimeout(function() {
+                alert('所有配對成功，遊戲結束！');
+            }, 500);
+        }
+    }
+</script>
+
+</body>
+</html>

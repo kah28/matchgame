@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Match Game</title>
+    <style>
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-gap: 10px;
+        }
+        #button-container > button {
+            width: 100px;
+            height: 100px;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .hidden {
+            background-color: #ddd; /* 隱藏時的背景色 */
+            color: transparent; /* 隱藏文字 */
+        }
+        .matched {
+            background-color: #90ee90; /* 成功配對後背景色 */
+        }
+    </style>
+</head>
+<body>
+
+<button id="btnStart">開始遊戲</button>
+<br>
+<br>
+<br>
+<div id="button-container" class="button-grid"></div>
+
+<script>
+    // 原始8個字串
+    var strings = ['apple', 'banana', 'cherry', 'date', 'elderberry', 'fig', 'grape', 'honeydew'];
+
+    // 找到容器和開始按鈕
+    var container = document.getElementById('button-container');
+    var btnStart = document.getElementById('btnStart');
+
+    // 追蹤選中的兩個按鈕，初始化為 null
+    let firstSelected = null;
+    let secondSelected = null;
+    let isProcessing = false; // 用來防止在配對期間的點擊
+
+    // 開始遊戲按鈕的事件處理
+    btnStart.addEventListener('click', function() {
+        // 清空現有按鈕
+        container.innerHTML = '';
+
+        // 重新開始遊戲時重置狀態
+        firstSelected = null;
+        secondSelected = null;
+        isProcessing = false; // 確保遊戲初始狀態允許點擊
+
+        // 將字串重複並隨機打亂順序
+        var repeatedStrings = strings.concat(strings);
+        repeatedStrings.sort(() => Math.random() - 0.5);
+
+        // 動態生成按鈕
+        repeatedStrings.forEach(function(str) {
+            var button = document.createElement('button');
+            button.className = str; // 將字串設為 class
+
+            // 點擊事件處理
+            button.addEventListener('click', function() {
+                // 如果已經在處理配對結果，或者按鈕已經配對成功，則不做任何動作
+                if (isProcessing || button.classList.contains('matched') || button === firstSelected) {
+                    return;
+                }
+
+                // 顯示 class 名稱
+                button.textContent = button.className;
+
+                if (!firstSelected) {
+                    // 如果還沒有選第一個按鈕
+                    firstSelected = button;
+                } else {
+                    // 選了第二個按鈕
+                    secondSelected = button;
+                    isProcessing = true; // 防止在配對結果處理完之前點擊其他按鈕
+
+                    // 確保按鈕都不是 null
+                    if (firstSelected && secondSelected) {
+                        // 比較兩個按鈕的 class
+                        if (firstSelected.className === secondSelected.className) {
+                            // 如果配對成功
+                            firstSelected.classList.add('matched');
+                            secondSelected.classList.add('matched');
+                            resetSelection();
+                        } else {
+                            // 如果配對失敗，延遲一段時間後清除文字
+                            setTimeout(function() {
+                                firstSelected.textContent = '';
+                                secondSelected.textContent = '';
+                                resetSelection();
+                            }, 1000);
+                        }
+                    }
+
+                    // 檢查是否已經全部配對成功
+                    checkWinCondition();
+                }
+            });
+
+            container.appendChild(button);
+        });
+    });
+
+    // 重置選擇和處理狀態
+    function resetSelection() {
+        firstSelected = null;
+        secondSelected = null;
+        isProcessing = false; // 允許再次點擊
+    }
+
+    // 檢查所有按鈕是否已經配對成功
+    function checkWinCondition() {
+        var matchedButtons = document.querySelectorAll('.matched');
+        if (matchedButtons.length === strings.length * 2) { // 所有按鈕都配對完成
+            setTimeout(function() {
+                alert('所有配對都成功了，遊戲結束！');
+            }, 500);
+        }
+    }
+</script>
+
+</body>
+</html>
